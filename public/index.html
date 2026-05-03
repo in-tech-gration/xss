@@ -20,6 +20,52 @@
   <div id="results"></div>
 
   <script>
+    function search(q, callback) {
+
+      // Fake results. We don't actually searching anything.
+      const results = [
+        'Result #1',
+        'Result #2',
+        'Result #3'
+      ];
+
+      callback(null, results);
+    }
+
+    function showQueryAndResults(q, results) {
+
+      const resultsEl = document.querySelector('#results');
+      let html = `
+        <p>Your search query:</p>
+        <pre>${q}</pre>
+        <ul>
+      `;
+
+      for (const result of results) {
+        html += `<li>${result}</li>`;
+      }
+      html += '</ul>';
+      resultsEl.innerHTML = html;
+    }
+
+    function getQueryParameter(name) {
+
+      const pairs = window.location.search.substring(1).split('&');
+
+      for (const pair of pairs) {
+
+        const _pair = pair.split('=');
+        console.log(_pair, name);
+
+        if (decodeURIComponent(_pair[0]) === name) {
+          return decodeURIComponent(_pair[1]);
+        }
+
+      }
+
+      return false;
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
 
       /*
@@ -36,52 +82,6 @@
       }
     });
 
-    function search(q, callback) {
-
-      // Fake results. We don't actually searching anything.
-      const results = [
-        'Result #1',
-        'Result #2',
-        'Result #3'
-      ];
-
-      callback(null, results);
-    }
-
-    function showQueryAndResults(q, results) {
-
-      const resultsEl = document.querySelector('#results');
-      let html = '';
-
-      html += '<p>Your search query:</p>';
-      html += '<pre>' + q + '</pre>';
-      html += '<ul>';
-
-      for (let index = 0; index < results.length; index++) {
-        html += '<li>' + results[index] + '</li>';
-      }
-
-      html += '</ul>';
-
-      resultsEl.innerHTML = html;
-    }
-
-    function getQueryParameter(name) {
-
-      const pairs = window.location.search.substring(1).split('&');
-      let pair;
-
-      for (let index = 0; index < pairs.length; index++) {
-
-        pair = pairs[index].split('=');
-
-        if (decodeURIComponent(pair[0]) === name) {
-          return decodeURIComponent(pair[1]);
-        }
-      }
-
-      return false;
-    }
   </script>
 </body>
 
