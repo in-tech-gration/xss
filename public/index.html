@@ -32,6 +32,7 @@
       callback(null, results);
     }
 
+    // ❌ Unsafe
     function showQueryAndResults(q, results) {
 
       const resultsEl = document.querySelector('#results');
@@ -46,6 +47,29 @@
       }
       html += '</ul>';
       resultsEl.innerHTML = html;
+    }
+
+    // ✅ Safer
+    function safeShowQueryAndResults(q, results) {
+
+      const resultsEl = document.querySelector('#results');
+      let html = `
+        <p>Your search query:</p>
+        <pre></pre>
+        <ul>
+      `;
+
+      for (const result of results) {
+        html += `<li>${result}</li>`;
+      }
+      html += '</ul>';
+      // We're quite safe here, as we are just injection our own data as HTML:
+      resultsEl.innerHTML = html;
+      
+      const queryTextEl = document.querySelector('#results pre');
+      // User input is inserted as plain text not HTML:
+      queryTextEl.textContent = q;
+
     }
 
     function getQueryParameter(name) {

@@ -151,7 +151,7 @@
 
   Imagine instead of localhost:3000, this was your bank's website. And you see a link in an official-looking email. What happens if you click that link? You might be running some malicious code in the context of your bank's website. Not such a big deal if you aren't logged in at that moment. But what if you are? Or what if you enter your login credentials on the page with the malicious code? Beginning to feel a bit paranoid? Good :)
 
-## Mitigation
+## Mitigation via Code Rewrite
 
   Let's stop scaring you for a moment and see if we can fix this. In this example project, at the root, the XSS vulnerability is caused by inserting unsafe ("unescaped") HTML into the page. In the `public/index.html` file, you will find the following function: `showQueryAndResults()`.
 
@@ -159,31 +159,19 @@
 
   There are a number of techniques we can use to prevent this particular XSS vulnerability.
 
-  We can change our application/website code to treat user input (the `q` parameter) strictly as text content. For example, here is a fixed up version of the above function:
+  We can change our application/website code to treat user input (the `q` parameter) strictly as text content. For example, replace the unsafe `showQueryAndResults` function with the safer `safeShowQueryAndResults` function inside the `DOMContentLoaded` event handler:
 
   ```js
-  function showQueryAndResults(q, results) {
+  // ❌ Don't 
+  showQueryAndResults(q, results);
 
-    const resultsEl = document.querySelector('#results');
-    let html = '';
-
-    html += '<p>Your search query:</p>';
-    html += '<pre></pre>';
-    html += '<ul>';
-
-    for (let index = 0; index < results.length; index++) {
-      html += '<li>' + results[index] + '</li>';
-    }
-
-    html += '</ul>';
-
-    resultsEl.innerHTML = html;
-
-    const queryTextEl = document.querySelector('#results pre');
-    queryTextEl.textContent = q;
-  }
+  // ✅ Do
+  safeShowQueryAndResults(q, results);
   ```
+
   Replace the function in your index.html with this fixed version and try the XSS proof-of-concept again. Now the HTML is printed as text and the alert pop-up is not shown. Great, we fixed this vulnerability! But that's just this vulnerability. There could be more in the rest of our code.
+
+## Mitigation via Content Security Policy
 
   Another technique we can use is [Content Security Policy](https://www.owasp.org/index.php/Content_Security_Policy) declarations to instruct the browser which types of code to run (and from where).
 
