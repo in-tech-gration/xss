@@ -1,3 +1,5 @@
+![](./assets/xss.jpg)
+
 # Cross-site Scripting (XSS)
 
   Example cross-site scripting vulnerabilities in action.
@@ -11,22 +13,25 @@
 
   If you have not already done so, make sure you have all the [requirements](#requirements) from above.
 
-  For Windows users, open Git Bash. You will use this program to run all the "terminal" commands you see in the rest of this guide.
+  For Windows users, open `Git Bash`. You will use this program to run all the "terminal" commands you see in the rest of this guide.
 
   For Linux and Mac users, open Terminal.
 
   Now let's get started. In your terminal program, use git to download the project:
+
   ```bash
-  git clone https://github.com/Learn-by-doing/xss.git
+  git clone https://github.com/in-tech-gration/xss
   ```
   If successful, a new folder named `xss` should have been created.
 
   Change directory into the new folder:
+
   ```bash
   cd xss
   ```
 
   Install the project's dependencies using npm:
+
   ```bash
   npm install
   ```
@@ -53,6 +58,10 @@
 
   > _"DOM-based cross-site scripting (DOM XSS) happens when data from a user-controlled source (like a username, or a redirect URL taken from the URL fragment) reaches a sink, which is a function like eval() or a property setter like .innerHTML that can execute arbitrary JavaScript code."_
   > Krzysztof Kotowicz
+
+  **SERVER-SIDE XSS**
+
+  > _"To prevent server-side XSS, don't generate HTML by concatenating strings. Use safe contextual-autoescaping templating libraries instead, along with a nonce-based Content Security Policy for additional bug mitigation."_ 
 
 ## Proof of Concept
 
@@ -144,27 +153,7 @@
 
 ## Mitigation
 
-  Let's stop scaring you for a moment and see if we can fix this. In this example project, at the root, the XSS vulnerability is caused by inserting unsafe ("unescaped") HTML into the page. In the `public/index.html` file, you will find the following function:
-
-  ```js
-  function showQueryAndResults(q, results) {
-
-    const resultsEl = document.querySelector('#results');
-    let html = '';
-
-    html += '<p>Your search query:</p>';
-    html += '<pre>' + q + '</pre>';
-    html += '<ul>';
-
-    for (let index = 0; index < results.length; index++) {
-      html += '<li>' + results[index] + '</li>';
-    }
-
-    html += '</ul>';
-
-    resultsEl.innerHTML = html;
-  }
-  ```
+  Let's stop scaring you for a moment and see if we can fix this. In this example project, at the root, the XSS vulnerability is caused by inserting unsafe ("unescaped") HTML into the page. In the `public/index.html` file, you will find the following function: `showQueryAndResults()`.
 
   This function is taking the search query (`q`) and inserting it as HTML into the `<div id="results"></div>` element. And since HTML allows JavaScript to be run inline via a number of different attributes, this provides a nice opportunity for XSS.
 
@@ -207,3 +196,11 @@
   But adding this tag to our index.html will break our page, because it disallows the inline JavaScript from running. To fix this, we will need to move our JavaScript to a separate file (ie. `search.js`).
 
   This is a very good solution to stop most XSS vulnerabilities from becoming harmful. But there is a major issue. Most applications will break when suddenly adding these directives. Changes have to be made to get the applications working again.
+
+## Mitigation via httpOnly
+
+## Mitigation via Trusted Types
+
+---
+
+_This repository was inspired by and forked from [https://github.com/Learn-by-doing/xss.git](https://github.com/Learn-by-doing/xss.git)_
