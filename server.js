@@ -1,5 +1,6 @@
-const express = require('express');
-const session = require('express-session');
+import express from "express";
+import session from "express-session";
+
 const app = express();
 
 // This serves the index.html file to the browser.

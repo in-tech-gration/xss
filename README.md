@@ -199,7 +199,54 @@
 
 ## Mitigation via httpOnly
 
+## Mitigation via Static Type Checking
+
+  ![](./assets/nounsanitized.eslint.jpg)
+
+  - [ ] Install [ESLint](https://eslint.org/docs/latest/use/getting-started)
+    - [ ] `npm init @eslint/config@latest`
+  - [ ] (Optionally) Install [ESLint VSCode Extension](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+  - [ ] [Enable support for inline HTML scripts](https://github.com/BenoitZugmeyer/eslint-plugin-html) for ESLint
+    - [ ] `npm install --save-dev eslint-plugin-html`
+  - [ ] [Enable Linter](https://github.com/mozilla/eslint-plugin-no-unsanitized)
+    - [ ] `npm install --save-dev eslint-plugin-no-unsanitized`
+  - [ ] `Update eslint.config.mjs`
+
+  ```js
+  // On top of already existing setup, add the following:
+  import nounsanitized from "eslint-plugin-no-unsanitized";
+  import html from "eslint-plugin-html"
+
+  export default defineConfig([
+    {
+      files: ["**/*.html"],
+      plugins: { nounsanitized, html },
+      rules: {
+        "nounsanitized/method": "error",
+        "nounsanitized/property": "error",
+      },
+    },
+  ]);  
+  ```
+
 ## Mitigation via Trusted Types
+
+  - [ ] Add `<meta http-equiv="Content-Security-Policy" content="require-trusted-types-for 'script'">` and optionally:
+
+  ```html
+  <script>
+    document.addEventListener('securitypolicyviolation', (error) => {
+      console.log({ error });
+    });
+  </script>  
+  ```
+
+  - [ ] Test in various browsers:
+    - ✅ Chrome
+    - ✅ Firefox
+    - ✅ Safari
+    - ✅ Brave
+    - ✅ Opera
 
 ---
 

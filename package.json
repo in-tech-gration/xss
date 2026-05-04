@@ -11,6 +11,7 @@
     "server": "node --watch server.js",
     "evil-server": "node --watch evil-server.js"
   },
-  "author": "",
+  "author": "kostasx",
+  "type": "module",
   "license": "MIT"
 }

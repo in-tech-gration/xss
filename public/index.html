@@ -55,7 +55,6 @@
       for (const pair of pairs) {
 
         const _pair = pair.split('=');
-        console.log(_pair, name);
 
         if (decodeURIComponent(_pair[0]) === name) {
           return decodeURIComponent(_pair[1]);
