@@ -15,6 +15,11 @@ export default defineConfig([
     rules: {
       "nounsanitized/method": "error",
       "nounsanitized/property": "error",
+      
+      // DOMPurify:
+      // "nounsanitized/method": ["error", { "escape": { "methods": ["DOMPurify.sanitize"] } }],
+      // "nounsanitized/property": ["error", { "escape": { "methods": ["DOMPurify.sanitize"] } }],
+
     },
   },
 ]);
