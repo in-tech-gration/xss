@@ -171,6 +171,14 @@
 
   Replace the function in your index.html with this fixed version and try the XSS proof-of-concept again. Now the HTML is printed as text and the alert pop-up is not shown. Great, we fixed this vulnerability! But that's just this vulnerability. There could be more in the rest of our code.
 
+## Mitigation via Library
+
+  - [ ] Install [DOMPurify](https://github.com/cure53/DOMPurify) (npm or CDN or script)
+    - [ ] npm: `npm install dompurify`
+    - [ ] CDN: `https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.7/purify.min.js`
+    - [ ] [script](https://raw.githubusercontent.com/cure53/DOMPurify/refs/heads/main/dist/purify.min.js): `/public/js/purify.min.js` 
+  - [ ] Use: `DOMPurify.sanitize( unsafeString );`
+
 ## Mitigation via Content Security Policy
 
   Another technique we can use is [Content Security Policy](https://www.owasp.org/index.php/Content_Security_Policy) declarations to instruct the browser which types of code to run (and from where).
