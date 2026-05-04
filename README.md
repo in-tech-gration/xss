@@ -151,50 +151,6 @@
 
   Imagine instead of localhost:3000, this was your bank's website. And you see a link in an official-looking email. What happens if you click that link? You might be running some malicious code in the context of your bank's website. Not such a big deal if you aren't logged in at that moment. But what if you are? Or what if you enter your login credentials on the page with the malicious code? Beginning to feel a bit paranoid? Good :)
 
-## Mitigation via Code Rewrite
-
-  Let's stop scaring you for a moment and see if we can fix this. In this example project, at the root, the XSS vulnerability is caused by inserting unsafe ("unescaped") HTML into the page. In the `public/index.html` file, you will find the following function: `showQueryAndResults()`.
-
-  This function is taking the search query (`q`) and inserting it as HTML into the `<div id="results"></div>` element. And since HTML allows JavaScript to be run inline via a number of different attributes, this provides a nice opportunity for XSS.
-
-  There are a number of techniques we can use to prevent this particular XSS vulnerability.
-
-  We can change our application/website code to treat user input (the `q` parameter) strictly as text content. For example, replace the unsafe `showQueryAndResults` function with the safer `safeShowQueryAndResults` function inside the `DOMContentLoaded` event handler:
-
-  ```js
-  // ❌ Don't 
-  showQueryAndResults(q, results);
-
-  // ✅ Do
-  safeShowQueryAndResults(q, results);
-  ```
-
-  Replace the function in your index.html with this fixed version and try the XSS proof-of-concept again. Now the HTML is printed as text and the alert pop-up is not shown. Great, we fixed this vulnerability! But that's just this vulnerability. There could be more in the rest of our code.
-
-## Mitigation via Library
-
-  - [ ] Install [DOMPurify](https://github.com/cure53/DOMPurify) (npm or CDN or script)
-    - [ ] npm: `npm install dompurify`
-    - [ ] CDN: `https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.7/purify.min.js`
-    - [ ] [script](https://raw.githubusercontent.com/cure53/DOMPurify/refs/heads/main/dist/purify.min.js): `/public/js/purify.min.js` 
-  - [ ] Use: `DOMPurify.sanitize( unsafeString );`
-
-## Mitigation via Content Security Policy
-
-  Another technique we can use is [Content Security Policy](https://www.owasp.org/index.php/Content_Security_Policy) declarations to instruct the browser which types of code to run (and from where).
-
-  For example, we can instruct the browser to only run JavaScript code from source files on the same domain. To do this, we add a special meta tag to the head of our HTML document:
-
-  ```html
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
-  ```
-
-  But adding this tag to our index.html will break our page, because it disallows the inline JavaScript from running. To fix this, we will need to move our JavaScript to a separate file (ie. `search.js`).
-
-  This is a very good solution to stop most XSS vulnerabilities from becoming harmful. But there is a major issue. Most applications will break when suddenly adding these directives. Changes have to be made to get the applications working again.
-
-## Mitigation via httpOnly
-
 ## Mitigation via Static Type Checking
 
   ![](./assets/nounsanitized.eslint.jpg)
@@ -225,6 +181,58 @@
   ]);  
   ```
 
+## Mitigation via Code Rewrite
+
+  Let's stop scaring you for a moment and see if we can fix this. In this example project, at the root, the XSS vulnerability is caused by inserting unsafe ("unescaped") HTML into the page. In the `public/index.html` file, you will find the following function: `showQueryAndResults()`.
+
+  This function is taking the search query (`q`) and inserting it as HTML into the `<div id="results"></div>` element. And since HTML allows JavaScript to be run inline via a number of different attributes, this provides a nice opportunity for XSS.
+
+  There are a number of techniques we can use to prevent this particular XSS vulnerability.
+
+  We can change our application/website code to treat user input (the `q` parameter) strictly as text content. For example, replace the unsafe `showQueryAndResults` function with the safer `safeShowQueryAndResults` function inside the `DOMContentLoaded` event handler:
+
+  ```js
+  // ❌ Don't 
+  showQueryAndResults(q, results);
+
+  // ✅ Do
+  safeShowQueryAndResults(q, results);
+  ```
+
+  Replace the function in your index.html with this fixed version and try the XSS proof-of-concept again. Now the HTML is printed as text and the alert pop-up is not shown. Great, we fixed this vulnerability! But that's just this vulnerability. There could be more in the rest of our code.
+
+## Mitigation via Library
+
+  - [ ] Install [DOMPurify](https://github.com/cure53/DOMPurify) (npm or CDN or script)
+    - [ ] npm: `npm install dompurify`
+    - [ ] CDN: `https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.7/purify.min.js`
+    - [ ] [script](https://raw.githubusercontent.com/cure53/DOMPurify/refs/heads/main/dist/purify.min.js): `/public/js/purify.min.js` 
+  - [ ] Use `resultsEl.innerHTML = DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: false });`
+  - [ ] Update `eslint.config.mjs`:
+
+  ```js
+    rules: {
+      "nounsanitized/method": ["error", { "escape": { "methods": ["DOMPurify.sanitize"] } }],
+      "nounsanitized/property": ["error", { "escape": { "methods": ["DOMPurify.sanitize"] } }],
+    },
+  ```
+
+## Mitigation via Content Security Policy
+
+  Another technique we can use is [Content Security Policy](https://www.owasp.org/index.php/Content_Security_Policy) declarations to instruct the browser which types of code to run (and from where).
+
+  For example, we can instruct the browser to only run JavaScript code from source files on the same domain. To do this, we add a special meta tag to the head of our HTML document:
+
+  ```html
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'">
+  ```
+
+  But adding this tag to our index.html will break our page, because it disallows the inline JavaScript from running. To fix this, we will need to move our JavaScript to a separate file (ie. `search.js`).
+
+  This is a very good solution to stop most XSS vulnerabilities from becoming harmful. But there is a major issue. Most applications will break when suddenly adding these directives. Changes have to be made to get the applications working again.
+
+## Mitigation via httpOnly
+
 ## Mitigation via Trusted Types
 
   - [ ] Add `<meta http-equiv="Content-Security-Policy" content="require-trusted-types-for 'script'">` and optionally:
@@ -243,6 +251,40 @@
     - ✅ Safari
     - ✅ Brave
     - ✅ Opera
+
+  - [ ] Fix:
+
+    ```html
+    <script>
+      if (window.trustedTypes && trustedTypes.createPolicy) { // Feature testing
+        window.escapeHTMLPolicy = trustedTypes.createPolicy('myEscapePolicy', {
+          createHTML: string => {
+            // return string; // ❌ Ops! Won't work.
+            return string.replace(/\</g, '&lt;')
+          },
+        });
+      }
+      // ...
+      resultsEl.innerHTML = window.escapeHTMLPolicy.createHTML(html);
+    </script>
+    ```
+
+    Update `eslint.config.mjs` and restart ESLint server:
+
+    ```js
+    rules: {
+      "nounsanitized/method": ["error", { 
+        "escape": { 
+          "methods": ["window.escapeHTMLPolicy.createHTML"] 
+          } 
+        }],
+      "nounsanitized/property": ["error", { 
+        "escape": { 
+          "methods": ["window.escapeHTMLPolicy.createHTML"] 
+          } 
+        }],
+    },
+    ```
 
 ---
 

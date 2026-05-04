@@ -65,7 +65,7 @@
       html += '</ul>';
       // We're quite safe here, as we are just injection our own data as HTML:
       resultsEl.innerHTML = html;
-      
+
       const queryTextEl = document.querySelector('#results pre');
       // User input is inserted as plain text not HTML:
       queryTextEl.textContent = q;
